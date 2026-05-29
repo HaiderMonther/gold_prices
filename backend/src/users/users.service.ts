@@ -40,7 +40,19 @@ export class UsersService {
     if (dto.password) {
       user.password_hash = await bcrypt.hash(dto.password, 10);
     }
-    Object.assign(user, dto);
+    
+    if (dto.name !== undefined) user.name = dto.name;
+    if (dto.is_active !== undefined) user.is_active = dto.is_active;
+    
+    // Protect super_admin from losing its role
+    if (dto.role !== undefined) {
+      if (user.role === UserRole.SUPER_ADMIN && dto.role !== UserRole.SUPER_ADMIN) {
+        // Ignore role change for super_admin
+      } else {
+        user.role = dto.role;
+      }
+    }
+
     const saved = await this.repo.save(user);
     const { password_hash, ...rest } = saved;
     return rest;
