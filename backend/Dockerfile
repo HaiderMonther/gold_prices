@@ -28,6 +28,7 @@ RUN npm ci --only=production
 
 # Copy built dist from builder stage
 COPY --from=builder /app/dist ./dist
+COPY seed-admin.js ./
 
 # Create uploads directory
 RUN mkdir -p uploads
