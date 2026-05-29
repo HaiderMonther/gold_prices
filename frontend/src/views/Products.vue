@@ -159,10 +159,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import api from '../api/axios'
 import { useToastStore } from '../stores/toast'
 
+const route = useRoute()
 const toast = useToastStore()
 const products = ref([])
 const loading = ref(true)
@@ -229,5 +231,17 @@ async function deleteProduct(p) {
 
 function statusLabel(s) { return { available: 'متاح', sold: 'مباع', reserved: 'محجوز' }[s] || s }
 function formatRawPrice(v) { return new Intl.NumberFormat('ar-IQ').format(Math.round(v)) + ' د.ع' }
-onMounted(load)
+
+onMounted(() => {
+  if (route.query.search) {
+    search.value = route.query.search
+  }
+  load()
+})
+
+watch(() => route.query.search, (newVal) => {
+  if (newVal !== undefined) {
+    search.value = newVal
+  }
+})
 </script>

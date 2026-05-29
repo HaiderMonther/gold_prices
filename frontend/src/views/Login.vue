@@ -139,6 +139,35 @@ const tenantLoading = ref(false)
 
 const brandColor = computed(() => tenantInfo.value?.primary_color || '#D69E27')
 
+// Helper to adjust color brightness
+const adjustColor = (color, amount) => {
+  return '#' + color.replace(/^#/, '').replace(/../g, color => ('0'+Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2))
+}
+
+// Helper to convert hex to RGB triplet string
+const hexToRgb = (hex) => {
+  if (!hex) return '214 158 39'; // Default gold
+  let c = hex.replace(/^#/, '');
+  if (c.length === 3) c = c.split('').map(x => x + x).join('');
+  const r = parseInt(c.slice(0, 2), 16);
+  const g = parseInt(c.slice(2, 4), 16);
+  const b = parseInt(c.slice(4, 6), 16);
+  return `${r} ${g} ${b}`;
+}
+
+import { watch } from 'vue'
+watch(brandColor, (color) => {
+  if (color && color !== '#D69E27') {
+    document.documentElement.style.setProperty('--gold-400', hexToRgb(adjustColor(color, 20)))
+    document.documentElement.style.setProperty('--gold-500', hexToRgb(color))
+    document.documentElement.style.setProperty('--gold-600', hexToRgb(adjustColor(color, -20)))
+  } else {
+    document.documentElement.style.removeProperty('--gold-400')
+    document.documentElement.style.removeProperty('--gold-500')
+    document.documentElement.style.removeProperty('--gold-600')
+  }
+}, { immediate: true })
+
 onMounted(() => {
   if (window.refreshIcons) window.refreshIcons()
 })

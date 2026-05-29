@@ -76,6 +76,7 @@
               v-model="searchQuery"
               @input="handleSearch"
               @focus="isSearching = true"
+              @keydown.enter="handleEnter"
               type="text" 
               placeholder="ابحث عن باركود، عميل، أو صفحة..."
               class="w-full bg-white border border-slate-100 rounded-2xl pr-12 pl-12 py-3 text-sm focus:ring-4 focus:ring-gold-500/5 focus:border-gold-300 outline-none transition-all shadow-sm font-bold"
@@ -109,7 +110,7 @@
                   </div>
                   <div>
                     <div class="text-sm font-bold text-slate-900">{{ result.label }}</div>
-                    <div class="text-[10px] text-slate-400">انتقال سريع إلى {{ result.label }}</div>
+                    <div class="text-[10px] text-slate-400">{{ result.subtitle || `انتقال سريع إلى ${result.label}` }}</div>
                   </div>
                 </router-link>
                 <div v-if="searchResults.length === 0" class="p-8 text-center">
@@ -207,6 +208,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useGoldStore } from '../stores/gold'
 import { useNotificationsStore } from '../stores/notifications'
+import api from '../api/axios'
 
 const route = useRoute()
 const router = useRouter()
@@ -219,8 +221,8 @@ const showNotifications = ref(false)
 const showUserMenu = ref(false)
 const searchResults = ref([])
 const isSearching = ref(false)
-const tenantName = ref(auth.tenant?.name || localStorage.getItem('gold_tenant_name') || 'ذهـبي')
-const tenantLogo = ref(auth.tenant?.logo_url || localStorage.getItem('gold_tenant_logo') || '')
+const tenantName = computed(() => auth.tenant?.name || localStorage.getItem('gold_tenant_name') || 'ذهـبي')
+const tenantLogo = computed(() => auth.tenant?.logo_url || localStorage.getItem('gold_tenant_logo') || '')
 
 const unreadCount = computed(() => notificationsStore.unreadCount)
 
@@ -232,6 +234,8 @@ const markAsRead = (notif) => {
   notificationsStore.markAsRead(notif.id)
 }
 
+let searchTimeout = null
+
 const handleSearch = () => {
   if (!searchQuery.value) {
     searchResults.value = []
@@ -240,18 +244,63 @@ const handleSearch = () => {
   }
   
   isSearching.value = true
-  // Mock search results based on navigation and some keywords
+  const query = searchQuery.value.toLowerCase()
+  
   const allItems = navSections.flatMap(s => s.items)
-  searchResults.value = allItems.filter(item => 
-    item.label.includes(searchQuery.value) || 
-    item.to.includes(searchQuery.value)
-  ).slice(0, 5)
+  const navResults = allItems.filter(item => 
+    item.label.toLowerCase().includes(query) || 
+    (item.to && item.to.toLowerCase().includes(query))
+  ).map(item => ({
+    ...item,
+    to: item.to === '/products' || item.to === '/customers' ? `${item.to}?search=${encodeURIComponent(query)}` : item.to
+  }))
+
+  searchResults.value = navResults.slice(0, 5)
+
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(async () => {
+    try {
+      const [productsRes, customersRes] = await Promise.all([
+        api.get('/products'),
+        api.get('/customers')
+      ])
+      
+      const products = productsRes.data
+        .filter(p => p.name.toLowerCase().includes(query) || (p.barcode && p.barcode.toLowerCase().includes(query)))
+        .map(p => ({
+          label: p.name,
+          to: `/products?search=${encodeURIComponent(query)}`,
+          icon: 'package',
+          subtitle: `باركود: ${p.barcode || 'لا يوجد'} - ${parseFloat(p.weight).toFixed(2)} جرام`
+        }))
+        
+      const customers = customersRes.data
+        .filter(c => c.name.toLowerCase().includes(query) || (c.phone && c.phone.includes(query)))
+        .map(c => ({
+          label: c.name,
+          to: `/customers?search=${encodeURIComponent(query)}`,
+          icon: 'user',
+          subtitle: `هاتف: ${c.phone || 'لا يوجد'}`
+        }))
+        
+      searchResults.value = [...navResults, ...products, ...customers].slice(0, 8)
+    } catch (e) {
+      console.error('Search error', e)
+    }
+  }, 300)
 }
 
 const clearSearch = () => {
   searchQuery.value = ''
   searchResults.value = []
   isSearching.value = false
+}
+
+const handleEnter = () => {
+  if (searchResults.value.length > 0) {
+    router.push(searchResults.value[0].to)
+    isSearching.value = false
+  }
 }
 
 const logout = () => {
