@@ -11,7 +11,7 @@
       <div class="text-center mb-10">
         <!-- Tenant Logo or Default Icon -->
         <div v-if="tenantInfo?.logo_url" class="w-20 h-20 mx-auto mb-6 rounded-[32px] overflow-hidden shadow-2xl">
-          <img :src="tenantInfo.logo_url" class="w-full h-full object-contain" alt="شعار الشركة" />
+          <img :src="getLogoUrl(tenantInfo.logo_url)" class="w-full h-full object-contain" alt="شعار الشركة" />
         </div>
         <div v-else class="gold-gradient-bg w-20 h-20 rounded-[32px] flex items-center justify-center text-white shadow-2xl shadow-gold-500/30 mx-auto mb-6 transform hover:scale-110 hover:rotate-6 transition-all duration-500">
           <i data-lucide="diamond" class="w-10 h-10 fill-white"></i>
@@ -124,6 +124,14 @@ import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import api from '../api/axios'
+
+const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || ''
+
+const getLogoUrl = (url) => {
+  if (!url) return ''
+  if (url.startsWith('http')) return url
+  return `${API_BASE}${url}`
+}
 
 const router = useRouter()
 const auth = useAuthStore()

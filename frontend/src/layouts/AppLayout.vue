@@ -1,12 +1,17 @@
 <template>
   <div class="flex h-screen bg-[#F8F9FA] font-sans" dir="rtl">
+    <!-- Mobile Overlay -->
+    <transition name="fade">
+      <div v-if="showSidebar" class="fixed inset-0 bg-slate-900/50 z-40 lg:hidden backdrop-blur-sm" @click="showSidebar = false"></div>
+    </transition>
+
     <!-- Sidebar -->
-    <aside class="w-72 bg-white/70 backdrop-blur-xl border-l border-slate-200/60 flex flex-col shrink-0 z-30 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+    <aside :class="['w-72 bg-white/70 backdrop-blur-xl border-l border-slate-200/60 flex flex-col shrink-0 z-50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] fixed lg:static inset-y-0 right-0 transition-transform duration-300', showSidebar ? 'translate-x-0' : 'translate-x-full lg:translate-x-0']">
       <div class="p-8 mb-4">
         <div class="flex items-center gap-4">
           <!-- Tenant Logo or Default -->
           <div v-if="tenantLogo" class="w-12 h-12 rounded-[18px] overflow-hidden shadow-xl border border-slate-100 shrink-0">
-            <img :src="tenantLogo" alt="شعار" class="w-full h-full object-contain" />
+            <img :src="getLogoUrl(tenantLogo)" alt="شعار" class="w-full h-full object-contain" />
           </div>
           <div v-else class="gold-gradient-bg w-12 h-12 rounded-[18px] flex items-center justify-center text-white shadow-xl shadow-gold-500/20 transition-all hover:scale-105 hover:rotate-6 shrink-0">
             <i data-lucide="diamond" class="w-6 h-6"></i>
@@ -15,6 +20,9 @@
             <div class="text-xl font-black text-slate-900 tracking-tight gold-text-gradient truncate">{{ tenantName }}</div>
             <div class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none">The Gold Hub</div>
           </div>
+          <button class="mr-auto lg:hidden text-slate-400 hover:text-slate-900" @click="showSidebar = false">
+            <i data-lucide="x" class="w-6 h-6"></i>
+          </button>
         </div>
       </div>
 
@@ -28,13 +36,14 @@
               v-for="item in section.items.filter(i => (!i.adminOnly || auth.isAdmin) && (!i.superAdminOnly || auth.isSuperAdmin))" 
               :key="item.to"
               :to="item.to"
+              @click="showSidebar = false"
               class="flex items-center gap-3 w-full px-4 py-3 rounded-2xl text-[13px] transition-all duration-300 group relative overflow-hidden text-slate-500 hover:bg-slate-50 hover:text-slate-900 nav-link"
               active-class="bg-gold-50 text-gold-700 font-bold shadow-sm shadow-gold-100/50 active-nav-link"
             >
               <div class="active-indicator absolute right-0 top-1/4 w-1 h-1/2 bg-gold-500 rounded-full opacity-0"></div>
               <i :data-lucide="item.icon" class="w-[19px] h-[19px] text-slate-400 group-hover:text-gold-500 nav-icon"></i>
               <span class="flex-1 text-right">{{ item.label }}</span>
-              <span v-if="item.shortcut" class="text-[9px] px-1.5 py-0.5 rounded border border-slate-200 transition-opacity opacity-0 group-hover:opacity-100 shortcut-badge">
+              <span v-if="item.shortcut" class="hidden lg:inline text-[9px] px-1.5 py-0.5 rounded border border-slate-200 transition-opacity opacity-0 group-hover:opacity-100 shortcut-badge">
                 {{ item.shortcut }}
               </span>
               <span v-if="item.badge" class="bg-gold-500 text-white text-[9px] px-2 py-0.5 rounded-full font-bold shadow-sm">
@@ -54,21 +63,24 @@
             <div class="text-xs font-black text-slate-900 truncate">{{ auth.user?.name }}</div>
             <div class="text-[10px] font-bold text-slate-400 truncate mt-0.5">{{ roleLabel }}</div>
           </div>
-          <i data-lucide="settings" class="w-3.5 h-3.5 text-slate-300 hover:text-gold-500 cursor-pointer transition-colors" @click="$router.push('/settings')"></i>
+          <i data-lucide="settings" class="w-3.5 h-3.5 text-slate-300 hover:text-gold-500 cursor-pointer transition-colors" @click="() => { $router.push('/settings'); showSidebar = false; }"></i>
         </div>
       </div>
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col overflow-hidden">
+    <main class="flex-1 flex flex-col overflow-hidden min-w-0">
       <!-- Header -->
-      <header class="h-20 bg-white/60 backdrop-blur-md border-b border-slate-200/50 flex items-center justify-between px-10 gap-6 z-20">
-        <div class="flex items-center gap-4">
-          <div class="w-1 h-8 bg-gold-400 rounded-full" />
-          <h1 class="text-xl font-black text-slate-900 tracking-tight">{{ pageTitle }}</h1>
+      <header class="h-16 lg:h-20 bg-white/60 backdrop-blur-md border-b border-slate-200/50 flex items-center justify-between px-4 lg:px-10 gap-3 lg:gap-6 z-20">
+        <div class="flex items-center gap-2 lg:gap-4">
+          <button @click="showSidebar = true" class="lg:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-xl transition-colors">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+          <div class="hidden lg:block w-1 h-8 bg-gold-400 rounded-full" />
+          <h1 class="text-lg lg:text-xl font-black text-slate-900 tracking-tight truncate max-w-[150px] lg:max-w-none">{{ pageTitle }}</h1>
         </div>
         
-        <div class="flex items-center gap-4 flex-1 max-w-md mx-auto relative search-area">
+        <div class="hidden md:flex items-center gap-4 flex-1 max-w-md mx-auto relative search-area">
           <div class="relative w-full group">
             <div class="absolute inset-0 bg-gold-400/5 rounded-2xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity" />
             <i data-lucide="search" class="absolute right-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-slate-400 group-focus-within:text-gold-500 transition-colors"></i>
@@ -124,43 +136,46 @@
           </transition>
         </div>
 
-        <div class="flex items-center gap-3">
-          <div class="flex items-center bg-white border border-slate-100 rounded-2xl p-1 gap-1 shadow-sm notification-area relative">
+        <div class="flex items-center gap-2 lg:gap-3">
+          <div class="flex items-center bg-white border border-slate-100 rounded-2xl p-1 gap-0.5 lg:gap-1 shadow-sm notification-area relative">
             <button 
-              @click="showNotifications = !showNotifications"
-              class="p-2.5 text-slate-400 hover:text-gold-600 hover:bg-gold-50 rounded-xl transition-all relative"
+              @click.stop="showNotifications = !showNotifications"
+              class="p-2 lg:p-2.5 text-slate-400 hover:text-gold-600 hover:bg-gold-50 rounded-xl transition-all relative"
             >
-              <i data-lucide="bell" class="w-5 h-5"></i>
-              <span v-if="unreadCount > 0" class="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white shadow-sm"></span>
+              <i data-lucide="bell" class="w-4 h-4 lg:w-5 lg:h-5"></i>
+              <span v-if="unreadCount > 0" class="absolute top-2 lg:top-2.5 right-2 lg:right-2.5 w-1.5 h-1.5 lg:w-2 lg:h-2 bg-rose-500 rounded-full border border-white lg:border-2 shadow-sm"></span>
             </button>
 
             <!-- Notifications Dropdown -->
             <transition name="fade">
-              <div v-if="showNotifications" class="absolute top-full left-0 mt-3 w-80 bg-white border border-slate-100 rounded-3xl shadow-2xl z-50 overflow-hidden">
-                <div class="p-5 border-b border-slate-50 flex items-center justify-between bg-gold-50/30">
+              <div v-if="showNotifications" class="fixed sm:absolute top-[70px] sm:top-full left-4 right-4 sm:left-0 sm:right-auto mt-0 sm:mt-3 w-auto sm:w-72 lg:w-80 bg-white border border-slate-100 rounded-3xl shadow-2xl z-50 overflow-hidden">
+                <div class="p-4 lg:p-5 border-b border-slate-50 flex items-center justify-between bg-gold-50/30">
                   <span class="text-sm font-black text-slate-900">الإشعارات</span>
                   <button @click="markAllAsRead" v-if="unreadCount > 0" class="text-[10px] font-bold text-gold-600 hover:underline">تحديد الكل كمقروء</button>
                 </div>
-                <div class="max-h-[400px] overflow-y-auto">
+                <div class="max-h-[300px] lg:max-h-[400px] overflow-y-auto">
+                  <div v-if="unreadNotifications.length === 0" class="p-8 text-center text-slate-400 text-sm font-bold">
+                    لا توجد إشعارات جديدة
+                  </div>
                   <div 
-                    v-for="notif in notificationsStore.notifications.slice(0, 5)" 
+                    v-for="notif in unreadNotifications.slice(0, 5)" 
                     :key="notif.id"
                     @click="markAsRead(notif)"
                     :class="[
-                      'p-4 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer flex gap-4',
+                      'p-3 lg:p-4 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer flex gap-3 lg:gap-4',
                       !notif.read ? 'bg-white' : 'bg-slate-50/50 opacity-70'
                     ]"
                   >
-                    <div :class="`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                    <div :class="`w-8 h-8 lg:w-10 lg:h-10 rounded-xl flex items-center justify-center shrink-0 ${
                       notif.type === 'success' ? 'bg-emerald-50 text-emerald-600' : 
                       notif.type === 'warning' ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600'
                     }`">
-                      <i :data-lucide="notif.icon" class="w-5 h-5"></i>
+                      <i :data-lucide="notif.icon" class="w-4 h-4 lg:w-5 lg:h-5"></i>
                     </div>
                     <div class="flex-1 min-w-0">
-                      <div class="text-[13px] font-bold text-slate-900 mb-0.5">{{ notif.title }}</div>
-                      <div class="text-[11px] text-slate-500 leading-relaxed mb-1">{{ notif.message }}</div>
-                      <div class="text-[10px] text-slate-400">{{ notif.time }}</div>
+                      <div class="text-[12px] lg:text-[13px] font-bold text-slate-900 mb-0.5">{{ notif.title }}</div>
+                      <div class="text-[10px] lg:text-[11px] text-slate-500 leading-relaxed mb-1">{{ notif.message }}</div>
+                      <div class="text-[9px] lg:text-[10px] text-slate-400">{{ notif.time }}</div>
                     </div>
                   </div>
                 </div>
@@ -170,32 +185,32 @@
               </div>
             </transition>
 
-            <div class="w-px h-6 bg-slate-100" />
+            <div class="w-px h-5 lg:h-6 bg-slate-100" />
             <button 
               @click="$router.push('/settings')"
-              class="p-2.5 text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all"
+              class="hidden sm:block p-2 lg:p-2.5 text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all"
               title="الإعدادات"
             >
-              <i data-lucide="settings" class="w-5 h-5"></i>
+              <i data-lucide="settings" class="w-4 h-4 lg:w-5 lg:h-5"></i>
             </button>
             <button 
               @click="logout"
-              class="p-2.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
+              class="p-2 lg:p-2.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
               title="تسجيل الخروج"
             >
-              <i data-lucide="log-out" class="w-5 h-5"></i>
+              <i data-lucide="log-out" class="w-4 h-4 lg:w-5 lg:h-5"></i>
             </button>
           </div>
 
-          <router-link to="/invoices/new" class="luxury-button group">
-            <i data-lucide="plus" class="w-5 h-5 stroke-[3] transition-transform group-hover:rotate-90"></i>
-            <span>فاتورة بيع</span>
+          <router-link to="/invoices/new" class="luxury-button group !px-3 lg:!px-8 !py-2 lg:!py-4 text-xs lg:text-sm">
+            <i data-lucide="plus" class="w-4 h-4 lg:w-5 lg:h-5 stroke-[3] transition-transform group-hover:rotate-90"></i>
+            <span class="hidden sm:inline">فاتورة بيع</span>
           </router-link>
         </div>
       </header>
 
       <!-- Page Content -->
-      <div class="flex-1 overflow-y-auto p-10 custom-scrollbar scroll-smooth">
+      <div class="flex-1 overflow-y-auto p-4 lg:p-10 custom-scrollbar scroll-smooth">
         <router-view :key="route.fullPath" />
       </div>
     </main>
@@ -210,6 +225,14 @@ import { useGoldStore } from '../stores/gold'
 import { useNotificationsStore } from '../stores/notifications'
 import api from '../api/axios'
 
+const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || ''
+
+const getLogoUrl = (url) => {
+  if (!url) return ''
+  if (url.startsWith('http')) return url
+  return `${API_BASE}${url}`
+}
+
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
@@ -219,12 +242,14 @@ const notificationsStore = useNotificationsStore()
 const searchQuery = ref('')
 const showNotifications = ref(false)
 const showUserMenu = ref(false)
+const showSidebar = ref(false)
 const searchResults = ref([])
 const isSearching = ref(false)
 const tenantName = computed(() => auth.tenant?.name || localStorage.getItem('gold_tenant_name') || 'ذهـبي')
 const tenantLogo = computed(() => auth.tenant?.logo_url || localStorage.getItem('gold_tenant_logo') || '')
 
 const unreadCount = computed(() => notificationsStore.unreadCount)
+const unreadNotifications = computed(() => notificationsStore.notifications.filter(n => !n.read))
 
 const markAllAsRead = () => {
   notificationsStore.markAllAsRead()
@@ -350,6 +375,22 @@ watch(() => route.path, () => {
     if (window.refreshIcons) window.refreshIcons()
   })
 })
+
+watch(showNotifications, (newVal) => {
+  if (newVal) {
+    nextTick(() => {
+      if (window.refreshIcons) window.refreshIcons()
+    })
+  }
+})
+
+watch(() => notificationsStore.notifications, () => {
+  if (showNotifications.value) {
+    nextTick(() => {
+      if (window.refreshIcons) window.refreshIcons()
+    })
+  }
+}, { deep: true })
 
 const pageTitle = computed(() => route.meta?.title || 'الرئيسية')
 

@@ -38,7 +38,7 @@
               {{ globalPrice ? globalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '---' }}
             </div>
             <div v-if="globalPrice && priceChange !== 0" class="text-sm font-bold flex items-center gap-1" :class="trendTextColorClass">
-              <i :data-lucide="priceChange > 0 ? 'trending-up' : 'trending-down'" class="w-4 h-4"></i>
+              <i :key="priceChange > 0" :data-lucide="priceChange > 0 ? 'trending-up' : 'trending-down'" class="w-4 h-4"></i>
               {{ priceChange > 0 ? '+' : '' }}{{ percentChange.toFixed(2) }}% ({{ Math.abs(priceChange).toFixed(2) }})
             </div>
             <div v-else-if="globalPrice" class="text-sm font-bold text-slate-400">
@@ -77,7 +77,7 @@
                 class="bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold p-2.5 rounded-lg flex items-center justify-center transition-all border border-slate-200 active:scale-95"
                 title="Toggle Live Updates"
               >
-                <i :data-lucide="autoUpdate ? 'pause' : 'play'" class="w-4 h-4" :class="autoUpdate ? 'fill-slate-600' : ''"></i>
+                <i :key="autoUpdate" :data-lucide="autoUpdate ? 'pause' : 'play'" class="w-4 h-4" :class="autoUpdate ? 'fill-slate-600' : ''"></i>
               </button>
               <button 
                 @click="fetchGlobalPrice(false)"
@@ -155,7 +155,7 @@
              <div class="space-y-1">
                <div class="flex items-center gap-3">
                  <div class="text-lg font-black tracking-tight">{{ formatRawPrice(p.price_24k) }} <span class="text-[10px] font-normal opacity-30 italic">IQD</span></div>
-                 <i v-if="i < prices.length - 1" :data-lucide="p.price_24k >= prices[i+1].price_24k ? 'trending-up' : 'trending-down'" :class="['w-3.5 h-3.5', p.price_24k >= prices[i+1].price_24k ? 'text-emerald-500' : 'text-rose-500']"></i>
+                 <i v-if="i < prices.length - 1" :key="p.price_24k >= prices[i+1].price_24k" :data-lucide="p.price_24k >= prices[i+1].price_24k ? 'trending-up' : 'trending-down'" :class="['w-3.5 h-3.5', p.price_24k >= prices[i+1].price_24k ? 'text-emerald-500' : 'text-rose-500']"></i>
                </div>
                <div class="text-[10px] font-bold text-slate-500 italic uppercase">{{ formatDateTime(p.created_at) }}</div>
              </div>
@@ -295,6 +295,7 @@ function toggleAutoUpdate() {
     clearInterval(autoUpdateInterval.value)
     autoUpdateInterval.value = null
     autoUpdate.value = false
+    nextTick(() => { if (window.refreshIcons) window.refreshIcons() })
   } else {
     autoUpdate.value = true
     fetchGlobalPrice(true)

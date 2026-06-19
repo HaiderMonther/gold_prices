@@ -1,11 +1,13 @@
 import { defineStore } from 'pinia'
 import api from '../api/axios'
+import { useToastStore } from './toast'
 
 export const useNotificationsStore = defineStore('notifications', {
   state: () => ({
     notifications: [],
     loading: false,
     error: null,
+    isFirstFetch: true,
   }),
   getters: {
     unreadCount: (state) => state.notifications.filter(n => !n.is_read).length,
@@ -15,11 +17,29 @@ export const useNotificationsStore = defineStore('notifications', {
       this.loading = true
       try {
         const response = await api.get('/notifications')
-        this.notifications = response.data.map(n => ({
+        const newNotifs = response.data.map(n => ({
           ...n,
           time: new Date(n.created_at).toLocaleString('ar-IQ', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }),
           read: n.is_read
         }))
+        
+        if (!this.isFirstFetch) {
+          const oldIds = new Set(this.notifications.map(n => n.id))
+          const incomingUnread = newNotifs.filter(n => !oldIds.has(n.id) && !n.is_read)
+          
+          if (incomingUnread.length > 0) {
+            const toastStore = useToastStore();
+            // Reversing so oldest new comes first if there are multiple
+            [...incomingUnread].reverse().forEach(n => {
+              if (n.type === 'success') toastStore.success(`${n.title} - ${n.message}`)
+              else if (n.type === 'error') toastStore.error(`${n.title} - ${n.message}`)
+              else toastStore.show(`${n.title} - ${n.message}`, n.type || 'info')
+            })
+          }
+        }
+        
+        this.notifications = newNotifs
+        this.isFirstFetch = false
       } catch (err) {
         this.error = err.message
       } finally {

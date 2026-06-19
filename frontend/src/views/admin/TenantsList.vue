@@ -231,7 +231,7 @@ const getLogoUrl = (url) => {
 
 const fetchTenants = async () => {
   try {
-    const res = await api.get('/tenants')
+    const res = await api.get(`/tenants?_t=${Date.now()}`)
     tenants.value = res.data
   } catch (error) {
     console.error('Error fetching tenants:', error)
@@ -275,11 +275,12 @@ const handleFileSelect = (event) => {
   if (!file) return
   
   selectedFile.value = file
-  // Use URL.createObjectURL for instant preview without freezing the browser
-  if (logoPreview.value && logoPreview.value.startsWith('blob:')) {
-    URL.revokeObjectURL(logoPreview.value)
+  
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    logoPreview.value = e.target.result
   }
-  logoPreview.value = URL.createObjectURL(file)
+  reader.readAsDataURL(file)
 }
 
 const removeLogo = () => {
@@ -334,7 +335,13 @@ const saveForm = async () => {
 
     // Upload logo file if one was selected
     if (selectedFile.value && savedId) {
-      await uploadLogoFile(savedId)
+      const newLogoUrl = await uploadLogoFile(savedId)
+      if (newLogoUrl) {
+        // Manually update the local form and tenant to ensure reactivity
+        form.value.logo_url = newLogoUrl
+        const idx = tenants.value.findIndex(t => t.id === savedId)
+        if (idx !== -1) tenants.value[idx].logo_url = newLogoUrl
+      }
     }
 
     showModal.value = false

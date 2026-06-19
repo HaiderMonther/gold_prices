@@ -1,35 +1,35 @@
 <template>
-  <div class="space-y-10 max-w-7xl mx-auto">
+  <div class="space-y-6 lg:space-y-10 max-w-7xl mx-auto">
     <!-- Luxury Pulse Bar -->
-    <div class="luxury-card p-2 pr-6 flex items-center justify-between overflow-hidden relative group">
+    <div class="luxury-card p-3 lg:p-2 pr-4 lg:pr-6 flex flex-col md:flex-row items-start md:items-center justify-between overflow-hidden relative group gap-4 md:gap-0">
       <div class="absolute left-0 top-0 bottom-0 w-2 gold-gradient-bg" />
-      <div class="flex items-center gap-6">
-        <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-[20px] flex items-center justify-center relative shadow-inner">
-          <i data-lucide="trending-up" class="w-6 h-6"></i>
-          <span class="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-4 border-white shadow-sm animate-pulse"></span>
+      <div class="flex items-center gap-4 lg:gap-6 w-full md:w-auto">
+        <div class="w-12 h-12 lg:w-14 lg:h-14 bg-emerald-50 text-emerald-600 rounded-[16px] lg:rounded-[20px] flex items-center justify-center relative shadow-inner shrink-0">
+          <i data-lucide="trending-up" class="w-5 h-5 lg:w-6 lg:h-6"></i>
+          <span class="absolute -top-1 -right-1 w-3 h-3 lg:w-4 lg:h-4 bg-emerald-500 rounded-full border-2 lg:border-4 border-white shadow-sm animate-pulse"></span>
         </div>
-        <div class="space-y-1">
-          <div class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none">Market Pulse</div>
-          <div class="text-base font-black text-slate-800 tracking-tight">سوق الذهب اليوم مستقر • <span class="text-emerald-600">تحديث لحظي</span></div>
+        <div class="space-y-0.5 lg:space-y-1 min-w-0">
+          <div class="text-[9px] lg:text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none">Market Pulse</div>
+          <div class="text-sm lg:text-base font-black text-slate-800 tracking-tight truncate">سوق الذهب اليوم مستقر • <span class="text-emerald-600">تحديث لحظي</span></div>
         </div>
       </div>
       
-      <div v-if="goldStore.latestPrice" class="flex items-center gap-10 pl-10 h-full">
-         <div class="flex flex-col items-center gap-1">
-           <span class="text-[10px] font-bold text-slate-400 uppercase">عـيار 24</span>
-           <span class="text-2xl font-black text-slate-900 leading-none">{{ formatRawPrice(goldStore.latestPrice.price_24k) }} <span class="text-[10px] font-medium opacity-40">د.ع</span></span>
+      <div v-if="goldStore.latestPrice" class="flex items-center gap-6 lg:gap-10 pl-2 lg:pl-10 h-full w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 border-slate-50 pt-3 md:pt-0">
+         <div class="flex flex-col items-center gap-0.5 lg:gap-1">
+           <span class="text-[9px] lg:text-[10px] font-bold text-slate-400 uppercase">عـيار 24</span>
+           <span class="text-xl lg:text-2xl font-black text-slate-900 leading-none">{{ formatRawPrice(goldStore.latestPrice.price_24k) }} <span class="text-[9px] lg:text-[10px] font-medium opacity-40">د.ع</span></span>
          </div>
-         <div class="w-px h-10 bg-slate-100" />
-         <div class="flex flex-col items-center gap-1">
-           <span class="text-[10px] font-bold text-slate-400 uppercase">عـيار 21</span>
-           <span class="text-2xl font-black text-slate-900 leading-none">{{ formatRawPrice(goldStore.latestPrice.price_21k) }} <span class="text-[10px] font-medium opacity-40">د.ع</span></span>
+         <div class="w-px h-8 lg:h-10 bg-slate-100" />
+         <div class="flex flex-col items-center gap-0.5 lg:gap-1">
+           <span class="text-[9px] lg:text-[10px] font-bold text-slate-400 uppercase">عـيار 21</span>
+           <span class="text-xl lg:text-2xl font-black text-slate-900 leading-none">{{ formatRawPrice(goldStore.latestPrice.price_21k) }} <span class="text-[9px] lg:text-[10px] font-medium opacity-40">د.ع</span></span>
          </div>
       </div>
     </div>
 
     <!-- High-End Bento Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-      <div v-for="stat in mainStats" :key="stat.label" class="luxury-card p-5 group cursor-pointer">
+    <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6">
+      <div v-for="stat in mainStats" :key="stat.label" class="luxury-card p-4 lg:p-5 group cursor-pointer col-span-1" :class="stat.label === 'مبيعات اليوم' && 'col-span-2 lg:col-span-1'">
         <div class="flex items-center justify-between mb-4">
           <div :class="['w-10 h-10 rounded-2xl flex items-center justify-center shadow-inner', stat.colorClass]">
             <i :data-lucide="stat.icon" class="w-5 h-5"></i>
@@ -53,13 +53,13 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-5 gap-10 mt-8">
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-10 mt-6 lg:mt-8">
       <!-- Activity Feed - Luxury Style -->
       <div class="lg:col-span-3 luxury-card overflow-hidden flex flex-col bg-white">
-        <div class="p-8 border-b border-slate-50 flex items-center justify-between">
-          <div class="flex items-center gap-3">
-             <div class="w-1.5 h-6 bg-gold-400 rounded-full" />
-             <h3 class="font-black text-slate-900 tracking-tight">آخر الفواتير</h3>
+        <div class="p-4 lg:p-8 border-b border-slate-50 flex items-center justify-between">
+          <div class="flex items-center gap-2 lg:gap-3">
+             <div class="w-1 lg:w-1.5 h-5 lg:h-6 bg-gold-400 rounded-full" />
+             <h3 class="font-black text-slate-900 tracking-tight text-sm lg:text-base">آخر الفواتير</h3>
           </div>
           <div class="flex items-center gap-4">
             <button @click="resetSystem" class="text-[10px] font-black text-rose-500 hover:text-rose-600 transition-colors">تصفير النظام</button>
@@ -70,32 +70,41 @@
           <div 
             v-for="inv in recentInvoices" 
             :key="inv.id"
-            class="flex gap-6 p-6 items-center cursor-default hover:bg-slate-50/50 transition-all"
+            class="flex flex-col sm:flex-row gap-4 sm:gap-6 p-4 lg:p-6 sm:items-center cursor-default hover:bg-slate-50/50 transition-all"
           >
-            <div class="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 bg-emerald-50 text-emerald-600 shadow-sm">
-               <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 lg:w-12 lg:h-12 rounded-xl lg:rounded-2xl flex items-center justify-center shrink-0 bg-emerald-50 text-emerald-600 shadow-sm">
+                 <i data-lucide="shopping-cart" class="w-4 h-4 lg:w-5 lg:h-5"></i>
+              </div>
+              <div class="flex-1 sm:hidden">
+                <div class="text-sm font-black text-slate-900 tracking-tight">فاتورة بيع #{{ inv.invoice_number }}</div>
+                <div class="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-wider">
+                  {{ formatDate(inv.created_at) }}
+                </div>
+              </div>
             </div>
-            <div class="flex-1">
+            <div class="flex-1 hidden sm:block">
               <div class="text-sm font-black text-slate-900 tracking-tight">فاتورة بيع #{{ inv.invoice_number }}</div>
               <div class="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wider">
                 {{ formatDate(inv.created_at) }} • العميل: <span class="text-slate-600">{{ inv.customer?.name || 'نقدي' }}</span>
               </div>
             </div>
-            <div class="text-right">
-               <div class="text-sm font-black text-slate-900">{{ formatRawPrice(inv.total_amount) }} <span class="text-[9px] font-bold opacity-30">د.ع</span></div>
-               <div class="text-[9px] font-bold text-slate-400 uppercase mt-1">القيمة الإجمالية</div>
+            <div class="text-right flex justify-between sm:block items-center">
+               <div class="text-[10px] font-bold text-slate-400 uppercase sm:hidden">القيمة الإجمالية</div>
+               <div class="text-sm lg:text-base font-black text-slate-900">{{ formatRawPrice(inv.total_amount) }} <span class="text-[9px] font-bold opacity-30">د.ع</span></div>
+               <div class="text-[9px] font-bold text-slate-400 uppercase mt-1 hidden sm:block">القيمة الإجمالية</div>
             </div>
           </div>
-          <div v-if="recentInvoices.length === 0" class="p-12 text-center text-slate-400">
+          <div v-if="recentInvoices.length === 0" class="p-8 lg:p-12 text-center text-slate-400 text-sm">
             لا توجد فواتير حديثة
           </div>
         </div>
       </div>
 
       <!-- Quick Market Monitor - Premium -->
-      <div class="lg:col-span-2 luxury-card p-8 bg-slate-900 text-white relative overflow-hidden group" style="background-color: #0f172a;">
+      <div class="lg:col-span-2 luxury-card p-6 lg:p-8 bg-slate-900 text-white relative overflow-hidden group" style="background-color: #0f172a;">
         <div class="absolute top-0 right-0 w-64 h-64 bg-gold-500/10 rounded-full -translate-y-1/2 translate-x-1/4 blur-3xl pointer-events-none" />
-        <div class="relative z-10 space-y-8">
+        <div class="relative z-10 space-y-6 lg:space-y-8">
           <div class="flex items-center justify-between">
             <h3 class="font-black text-gold-500 tracking-tight text-lg">مؤشرات السوق</h3>
             <div class="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-xl border border-white/10 backdrop-blur-md">
