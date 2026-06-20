@@ -21,6 +21,9 @@ import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { CronModule } from './cron/cron.module';
 import { PaymentsModule } from './payments/payments.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { RolesModule } from './roles/roles.module';
+import { Role } from './roles/role.entity';
+import { Permission } from './roles/permission.entity';
 // Entities
 import { User } from './users/user.entity';
 import { Customer } from './customers/customer.entity';
@@ -57,6 +60,7 @@ import { Notification } from './notifications/notification.entity';
           User, Customer, Product, Invoice, InvoiceItem,
           Purchase, Expense, Debt, GoldPrice, InventoryCheck,
           CashBox, Transfer, Tenant, Subscription, Notification,
+          Role, Permission,
         ],
         synchronize: true,
         logging: false,
@@ -80,6 +84,7 @@ import { Notification } from './notifications/notification.entity';
     CronModule,
     PaymentsModule,
     NotificationsModule,
+    RolesModule,
   ],
 })
 export class AppModule {}

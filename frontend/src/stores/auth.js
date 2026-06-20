@@ -2,6 +2,32 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import api from '../api/axios'
 
+// -------------------------------------------------------
+// خريطة الصلاحيات لكل دور — تتطابق مع الـ seed في الـ backend
+// -------------------------------------------------------
+const ROLE_PERMISSIONS = {
+  super_admin: ['*'], // كل الصلاحيات
+  admin: ['*'],       // كل الصلاحيات
+  accountant: [
+    'view_invoices',
+    'view_purchases',
+    'view_expenses', 'create_expenses',
+    'view_reports', 'export_reports',
+    'view_cashbox', 'manage_cashbox',
+    'view_transfers', 'create_transfers',
+    'view_debts', 'manage_debts',
+    'view_customers',
+    'view_gold_prices',
+    'view_settings',
+  ],
+  cashier: [
+    'view_invoices', 'create_invoices',
+    'view_products',
+    'view_customers', 'create_customers',
+    'view_gold_prices',
+  ],
+}
+
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('gold_token') || '')
   const user = ref(JSON.parse(localStorage.getItem('gold_user') || 'null'))
@@ -11,6 +37,19 @@ export const useAuthStore = defineStore('auth', () => {
   const isAdmin = computed(() => ['admin', 'super_admin'].includes(user.value?.role))
   const isSuperAdmin = computed(() => user.value?.role === 'super_admin')
   const isAccountant = computed(() => ['admin', 'super_admin', 'accountant'].includes(user.value?.role))
+
+  // دالة للتحقق من صلاحية معيّنة بناءً على الدور الحالي
+  function can(permission) {
+    const role = user.value?.role
+    if (!role) return false
+    const perms = ROLE_PERMISSIONS[role] || []
+    return perms.includes('*') || perms.includes(permission)
+  }
+
+  // التحقق من قائمة صلاحيات (يرجع true إذا كان لديه واحدة على الأقل)
+  function canAny(...permissions) {
+    return permissions.some(p => can(p))
+  }
 
   async function login(username, password, tenantCode) {
     const res = await api.post('/auth/login', { username, password, tenant_code: tenantCode || '' })
@@ -47,5 +86,6 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('gold_tenant_color')
   }
 
-  return { token, user, tenant, isAuthenticated, isAdmin, isSuperAdmin, isAccountant, login, logout }
+  return { token, user, tenant, isAuthenticated, isAdmin, isSuperAdmin, isAccountant, can, canAny, login, logout }
 })
+

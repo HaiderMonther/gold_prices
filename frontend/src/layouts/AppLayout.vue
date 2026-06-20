@@ -33,7 +33,11 @@
           </div>
           <div class="space-y-1">
             <router-link 
-              v-for="item in section.items.filter(i => (!i.adminOnly || auth.isAdmin) && (!i.superAdminOnly || auth.isSuperAdmin))" 
+              v-for="item in section.items.filter(i => 
+                (!i.adminOnly || auth.isAdmin) && 
+                (!i.superAdminOnly || auth.isSuperAdmin) &&
+                (!i.permission || auth.can(i.permission))
+              )" 
               :key="item.to"
               :to="item.to"
               @click="showSidebar = false"
@@ -407,35 +411,35 @@ const navSections = [
     title: 'الرئيسية',
     items: [
       { to: '/dashboard', label: 'لوحة التحكم', icon: 'layout-dashboard', shortcut: 'Alt+D' },
-      { to: '/gold-prices', label: 'أسعار الذهب', icon: 'trending-up', badge: 'مباشر' }
+      { to: '/gold-prices', label: 'أسعار الذهب', icon: 'trending-up', badge: 'مباشر', permission: 'view_gold_prices' }
     ]
   },
   {
     title: 'التجارة',
     items: [
-      { to: '/invoices/new', label: 'بيع مصوغات', icon: 'shopping-cart', shortcut: 'Alt+N' },
-      { to: '/purchases/new', label: 'شراء مصوغات', icon: 'shopping-bag' },
-      { to: '/purchases', label: 'شراء كسر (خردة)', icon: 'coins' },
-      { to: '/products', label: 'المخزون', icon: 'package' },
-      { to: '/inventory', label: 'الجرد الدوري', icon: 'package-search' }
+      { to: '/invoices/new', label: 'بيع مصوغات', icon: 'shopping-cart', shortcut: 'Alt+N', permission: 'create_invoices' },
+      { to: '/purchases/new', label: 'شراء مصوغات', icon: 'shopping-bag', permission: 'create_purchases' },
+      { to: '/purchases', label: 'شراء كسر (خردة)', icon: 'coins', permission: 'view_purchases' },
+      { to: '/products', label: 'المخزون', icon: 'package', permission: 'view_products' },
+      { to: '/inventory', label: 'الجرد الدوري', icon: 'package-search', permission: 'view_inventory' }
     ]
   },
   {
     title: 'الحسابات',
     items: [
-      { to: '/account-statement', label: 'كشف الحساب', icon: 'file-text', badge: 'جديد' },
-      { to: '/cash-box', label: 'الصندوق اليومي', icon: 'wallet', badge: 'جديد' },
-      { to: '/invoices', label: 'الفواتير', icon: 'receipt' },
-      { to: '/customers', label: 'العملاء والتجار', icon: 'users' },
-      { to: '/debts', label: 'الديون', icon: 'clipboard-list' },
-      { to: '/transfers', label: 'الحوالات', icon: 'send' },
-      { to: '/expenses', label: 'المصروفات', icon: 'banknote' }
+      { to: '/account-statement', label: 'كشف الحساب', icon: 'file-text', badge: 'جديد', permission: 'view_invoices' },
+      { to: '/cash-box', label: 'الصندوق اليومي', icon: 'wallet', badge: 'جديد', permission: 'view_cashbox' },
+      { to: '/invoices', label: 'الفواتير', icon: 'receipt', permission: 'view_invoices' },
+      { to: '/customers', label: 'العملاء والتجار', icon: 'users', permission: 'view_customers' },
+      { to: '/debts', label: 'الديون', icon: 'clipboard-list', permission: 'view_debts' },
+      { to: '/transfers', label: 'الحوالات', icon: 'send', permission: 'view_transfers' },
+      { to: '/expenses', label: 'المصروفات', icon: 'banknote', permission: 'view_expenses' }
     ]
   },
   {
     title: 'التحليلات',
     items: [
-      { to: '/reports', label: 'التقارير', icon: 'bar-chart-3', badge: 'جديد' }
+      { to: '/reports', label: 'التقارير', icon: 'bar-chart-3', badge: 'جديد', permission: 'view_reports' }
     ]
   },
   {
@@ -443,7 +447,8 @@ const navSections = [
     items: [
       { to: '/tenants', label: 'العملاء (SaaS)', icon: 'building', superAdminOnly: true },
       { to: '/users', label: 'الموظفين', icon: 'user-cog', adminOnly: true },
-      { to: '/settings', label: 'الإعدادات', icon: 'settings' }
+      { to: '/permissions', label: 'الصلاحيات والأدوار', icon: 'shield-check', adminOnly: true },
+      { to: '/settings', label: 'الإعدادات', icon: 'settings', permission: 'view_settings' }
     ]
   }
 ]
